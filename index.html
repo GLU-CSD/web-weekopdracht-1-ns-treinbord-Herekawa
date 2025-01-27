@@ -1,22 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weekopdracht - NS-Treinbord</title>
     <link rel="stylesheet" href="assets/css/style.css">
+
+    <script>
+
+        fetch('https://gateway.apiportal.ns.nl/reisinformatie-api/api/v2/departures?uicCode=8400621&maxJourneys=100', {
+            method: 'GET',
+            // Request headers
+            headers: {
+                'Cache-Control': 'no-cache',
+                'Ocp-Apim-Subscription-Key': 'd114d5dce295433a92f19b783ce4e2b3',
+            }
+        })
+            .then(response => {
+                console.log(response.status);
+                response.text().then(json => {
+                    const object = JSON.parse(json)
+                    const departures = Array.from(object.payload.departures)
+                    const number = Math.floor(Math.random() * (departures.length-1));
+
+                    document.getElementById("to").innerHTML = departures[number].direction
+                    document.getElementById("via").innerHTML = departures[number].routeStations[0]?.mediumName
+                    document.getElementById("spoor").innerHTML = departures[number].actualTrack
+                    document.getElementById("train_type").innerHTML = departures[number].product.longCategoryName
+
+                    const stations_enroute = Array.from(departures[number].routeStations)
+                    const station_names = []
+                    stations_enroute.forEach (value => station_names.push(value.mediumName))
+                    document.getElementById("via").innerHTML = "via: " + station_names.toString()
+
+                    document.getElementById("next").innerHTML = "I am a message"
+
+                    planned_time = Math.floor((Date.parse(departures[number].plannedDateTime)-Date.now())/60000)
+                    actual_time = Math.floor((Date.parse(departures[number].actualDateTime)-Date.now())/60000)
+                    
+                    document.getElementById("leaves_at").innerHTML = actual_time + " minuten"
+                })
+            })
+            .catch(err => console.error(err));
+
+    </script>
 </head>
+
 <body>
     <div id="container">
         <div id="left">
             <!-- hier komt de klok -->
         </div>
         <div id="middle">
-            <!-- Hier komt de reizigers info -->
+            <div id="middle-inside">
+                <div style="display: flex; padding: 5px;">
+                    <div style="width: 245px; height: 45px;">
+                        <p id="leaves_at" style="height: 40px;">-<span style="font-size: 20px;"> minuut</span></p>
+                    </div>
+                    <div style="width: 60px;"></div>
+                    <div style="display: flex;">
+                        <p id="train_type">-</p>
+                        <img style="height: 35px;" src="/assets/img/ns_logo.png" />
+                    </div>
+                </div>
+                <div style="padding: 5px;">
+                    <p id="to" style="margin-bottom: 10px;">-</p>
+                    <p id="via" style="font-size: 20px; font-weight: normal;">-</p>
+                </div>
+            </div>
+            <div id="darkblue" style="height: 25px; width: 484px;">
+                <p id="next" style="color: white; margin-left: 4px; font-size: 18px;">-</p>
+            </div>
         </div>
+
         <div id="right">
-            <!-- hier komt het spoor nummer -->
+            <div style="width: 96px; height: 96px; background-color: white;">
+                <div style="height: 20px; display: flex;">
+                    <div id="blue" style="width: 20px;"></div>
+                    <p style="font-size: 12px; margin-left: 2px; color: rgb(0, 0, 164);">spoor</p>
+                </div>
+
+                <div style="height: 76px; margin: 5px;">
+                    <p id="spoor" style=" font-size: 58px; color: rgb(0, 0, 164); text-align: center;">-<!--span
+                            style="font-size: 22px; vertical-align: top;">a</span--></p>
+                </div>
+            </div>
         </div>
     </div>
 </body>
+
 </html>
